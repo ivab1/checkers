@@ -921,7 +921,11 @@ int main() {
                 double currentTime = glfwGetTime(); // Получаем текущее время
                 // Если прошло более 0.7 секунд с последнего хода
                 if (currentTime - lastMoveTime > 0.7) {
+                    double start_time = glfwGetTime();
                     botMove(); // Ход бота
+                    double end_time = glfwGetTime();
+                    double time_spent = end_time - start_time;
+                    printf("botMove: time = %.4f sec\n", time_spent);
                     lastMoveTime = currentTime; // Обновляется время
                 }
             }
