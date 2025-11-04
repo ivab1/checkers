@@ -1,4 +1,3 @@
-// simple_benchmarks.c
 #include <stdio.h>
 #include <time.h>
 #include <stdint.h>
@@ -126,7 +125,7 @@ void bench_minimax_shallow() {
             tempBoard[x][y] = board[x][y];
         }
     }
-    minimax(tempBoard, 6, true, -10000, 10000);
+    minimax(tempBoard, 2, true, -10000, 10000);
 }
 
 void bench_simple_move() {
