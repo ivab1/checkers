@@ -866,6 +866,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 int main() {
     runTests(); // Запуск тестов
+    runBenchmarks(); // Запуск бенчмарков
     // Инициализируем библиотеку GLFW
     // Если инициализация не удалась, программа завершает работу с кодом -1
     if (!glfwInit()) return -1;

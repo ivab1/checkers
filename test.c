@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "menu.h" // Ваш заголовочный файл с функциями
+#include "menu.h" 
 
 // Функция для тестирования drawMenu
 void test_DrawMenu() {
