@@ -1,0 +1,41 @@
+﻿  benchmark.c
+C:\Users\Acer\source\repos\rep_checkers\benchmark.c(140,32): warning C4113: "void (__cdecl *)()" отличается в списках параметров от "void (__cdecl *)(void)"
+C:\Users\Acer\source\repos\rep_checkers\benchmark.c(141,39): warning C4113: "void (__cdecl *)()" отличается в списках параметров от "void (__cdecl *)(void)"
+C:\Users\Acer\source\repos\rep_checkers\benchmark.c(142,37): warning C4113: "void (__cdecl *)()" отличается в списках параметров от "void (__cdecl *)(void)"
+C:\Users\Acer\source\repos\rep_checkers\benchmark.c(143,44): warning C4113: "void (__cdecl *)()" отличается в списках параметров от "void (__cdecl *)(void)"
+C:\Users\Acer\source\repos\rep_checkers\benchmark.c(144,44): warning C4113: "void (__cdecl *)()" отличается в списках параметров от "void (__cdecl *)(void)"
+C:\Users\Acer\source\repos\rep_checkers\benchmark.c(145,40): warning C4113: "void (__cdecl *)()" отличается в списках параметров от "void (__cdecl *)(void)"
+C:\Users\Acer\source\repos\rep_checkers\benchmark.c(146,37): warning C4113: "void (__cdecl *)()" отличается в списках параметров от "void (__cdecl *)(void)"
+C:\Users\Acer\source\repos\rep_checkers\benchmark.c(147,50): warning C4113: "void (__cdecl *)()" отличается в списках параметров от "void (__cdecl *)(void)"
+C:\Users\Acer\source\repos\rep_checkers\benchmark.c(148,42): warning C4113: "void (__cdecl *)()" отличается в списках параметров от "void (__cdecl *)(void)"
+C:\Users\Acer\source\repos\rep_checkers\benchmark.c(149,42): warning C4113: "void (__cdecl *)()" отличается в списках параметров от "void (__cdecl *)(void)"
+C:\Users\Acer\source\repos\rep_checkers\benchmark.c(150,30): warning C4113: "void (__cdecl *)()" отличается в списках параметров от "void (__cdecl *)(void)"
+C:\Users\Acer\source\repos\rep_checkers\benchmark.c(151,31): warning C4113: "void (__cdecl *)()" отличается в списках параметров от "void (__cdecl *)(void)"
+  checkers.c
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(223,26): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(223,41): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(224,32): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(224,47): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(225,32): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(225,53): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(226,26): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(226,47): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(246,34): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(246,49): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(247,40): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(247,55): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(248,40): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(248,61): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(249,34): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(249,55): warning C4244: функция: преобразование "int" в "GLfloat", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(271,42): warning C4244: инициализация: преобразование "int" в "float", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(272,42): warning C4244: инициализация: преобразование "int" в "float", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(280,44): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(295,48): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(660,13): warning C4013: memcpy: нет определения; предполагается "extern" с возвратом типа "int"
+C:\Users\Acer\source\repos\rep_checkers\checkers.c(868,5): warning C4013: runTests: нет определения; предполагается "extern" с возвратом типа "int"
+  menu.c
+  test.c
+C:\Users\Acer\source\repos\rep_checkers\test.c(56,22): warning C4013: get_time_ns: нет определения; предполагается "extern" с возвратом типа "int"
+  Создание кода...
+  checkers.vcxproj -> C:\Users\Acer\source\repos\rep_checkers\x64\Debug\checkers.exe

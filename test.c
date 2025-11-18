@@ -9,7 +9,6 @@
 #include <sys/time.h>
 #endif
 
-// ��������� ����������� �� checkers.c
 #define BOARD_SIZE 8
 typedef enum {
     EMPTY, BLACK, WHITE, BLACK_KING, WHITE_KING
@@ -26,7 +25,6 @@ typedef struct {
     bool is_capture;
 } Move;
 
-// ���������� ������� �� checkers.c
 extern void initBoard();
 extern int evaluatePosition();
 extern bool canCaptureFrom(int x, int y);
@@ -41,13 +39,11 @@ extern void updateGameOver();
 
 extern uint64_t get_time_ns();
 
-// ���������� ���������� �� checkers.c
 extern Piece board[BOARD_SIZE][BOARD_SIZE];
 
 void bench_minimax_debug() {
     Piece tempBoard[BOARD_SIZE][BOARD_SIZE];
 
-    // �������� �����
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             tempBoard[x][y] = board[x][y];
@@ -67,7 +63,6 @@ void bench_minimax_debug() {
     printf("minimax depth=6: result=%d, time=%.2f ms\n", result6, (end - start) / 1e6);
 }
 
-// �������� ������� ��� ������� ������
 void runTests() {
     bench_minimax_debug();
 }
