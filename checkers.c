@@ -15,6 +15,27 @@
 #define WINDOW_SIZE (BOARD_SIZE * CELL_SIZE)
 #define MAX_DEPTH 6
 
+// Добавляем новые константы для TT
+#define TT_SIZE 100000  // 100K записей - оптимальный размер
+#define TT_EXACT 0
+#define TT_LOWER_BOUND 1
+#define TT_UPPER_BOUND 2
+
+// Структура для таблицы транспозиций (компактная - 8 байт)
+typedef struct {
+    uint32_t hash_low;  // Младшие 32 бита хеша
+    int16_t score;      // Оценка позиции
+    uint8_t depth;      // Глубина поиска
+    uint8_t flag;       // Тип оценки (EXACT/LOWER/UPPER)
+} TTEntry;
+
+// Глобальная таблица транспозиций
+TTEntry transposition_table[TT_SIZE];
+
+// Zobrist ключи для хеширования
+uint64_t zobrist_table[BOARD_SIZE][BOARD_SIZE][5];
+uint64_t turn_key;
+
 extern void runTests();
 
 typedef enum {
@@ -72,6 +93,87 @@ bool isOpponent(Piece a, Piece b) {
     if (a == EMPTY || b == EMPTY) return false;
     return (isWhite(a) && isBlack(b)) || (isBlack(a) && isWhite(b));
 }
+
+
+
+// Генерация случайных 64-битных чисел
+uint64_t random_64bit() {
+    // Используем простой PRNG, можно заменить на более качественный
+    static uint64_t seed = 0x123456789ABCDEF;
+    seed = seed * 6364136223846793005ULL + 1442695040888963407ULL;
+    return seed;
+}
+
+// Инициализация Zobrist таблицы
+void init_zobrist() {
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
+            for (int p = 0; p < 5; p++) { // 5 типов фигур: EMPTY, BLACK, WHITE, BLACK_KING, WHITE_KING
+                zobrist_table[x][y][p] = random_64bit();
+            }
+        }
+    }
+    turn_key = random_64bit();
+}
+
+// Вычисление хеша для произвольной доски
+uint64_t compute_board_hash_for_board(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], bool is_white_turn) {
+    uint64_t hash = 0;
+
+    // Хешируем фигуры на переданной доске
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
+            Piece p = tempBoard[x][y];
+            hash ^= zobrist_table[x][y][p];
+        }
+    }
+
+    // Хешируем чей ход
+    if (is_white_turn) {
+        hash ^= turn_key;
+    }
+
+    return hash;
+}
+
+// Обертка для глобальной доски (оставляем для обратной совместимости)
+uint64_t compute_board_hash() {
+    return compute_board_hash_for_board(board, isWhiteTurn);
+}
+
+// Очистка таблицы транспозиций
+void clear_transposition_table() {
+    memset(transposition_table, 0, sizeof(transposition_table));
+}
+
+// Поиск в таблице транспозиций
+TTEntry* tt_lookup(uint64_t hash) {
+    uint32_t index = hash % TT_SIZE;
+    uint32_t hash_low = (uint32_t)(hash & 0xFFFFFFFF);
+
+    if (transposition_table[index].hash_low == hash_low) {
+        return &transposition_table[index];
+    }
+    return NULL;
+}
+
+// Сохранение в таблицу транспозиций
+void tt_store(uint64_t hash, int depth, int score, int flag) {
+    if (depth < 0 || depth > 255) return;
+
+    uint32_t index = hash % TT_SIZE;
+    uint32_t hash_low = (uint32_t)(hash & 0xFFFFFFFF);
+
+    // Всегда заменяем - простая стратегия
+    transposition_table[index] = (TTEntry){
+        .hash_low = hash_low,
+        .score = (int16_t)score,
+        .depth = (uint8_t)depth,
+        .flag = (uint8_t)flag
+    };
+}
+
+
 
 void initBoard() {
     for (int y = 0; y < BOARD_SIZE; y++) {
@@ -497,44 +599,109 @@ void makeTempMove(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], Move move) {
     else if (p == BLACK && move.to.y == BOARD_SIZE - 1) tempBoard[move.to.x][move.to.y] = BLACK_KING;
 }
 
-int minimax(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], int depth, int max_depth, bool isMaximizing, int alpha, int beta) {
+int minimax(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], int depth, int max_depth, bool isMaximizing, int alpha, int beta, uint64_t current_hash) {
+    // Проверяем таблицу транспозиций
+    TTEntry* entry = tt_lookup(current_hash);
+    if (entry != NULL && entry->depth >= max_depth - depth) {
+        // Нашли подходящую запись в кэше
+        switch (entry->flag) {
+        case TT_EXACT:
+            return entry->score;
+        case TT_LOWER_BOUND:
+            alpha = (alpha > entry->score) ? alpha : entry->score;
+            break;
+        case TT_UPPER_BOUND:
+            beta = (beta < entry->score) ? beta : entry->score;
+            break;
+        }
+        if (alpha >= beta) {
+            return entry->score;
+        }
+    }
+
+    // Стандартная терминальная проверка
     if (depth == max_depth) {
-        return evaluatePosition();
+        // Используем переданную доску для оценки
+        // Временно сохраняем глобальное состояние
+        Piece saved_board[BOARD_SIZE][BOARD_SIZE];
+        bool saved_isWhiteTurn = isWhiteTurn;
+
+        // Подменяем глобальное состояние на временное
+        memcpy(saved_board, board, sizeof(board));
+        memcpy(board, tempBoard, sizeof(board));
+        isWhiteTurn = isMaximizing; // Для корректной оценки позиции
+
+        int score = evaluatePosition();
+
+        // Восстанавливаем глобальное состояние
+        memcpy(board, saved_board, sizeof(board));
+        isWhiteTurn = saved_isWhiteTurn;
+
+        return score;
     }
 
     Move moves[100];
     int moveCount = 0;
+
+    // Временно подменяем глобальную доску для генерации ходов
+    Piece saved_board[BOARD_SIZE][BOARD_SIZE];
+    bool saved_isWhiteTurn = isWhiteTurn;
+    memcpy(saved_board, board, sizeof(board));
+    memcpy(board, tempBoard, sizeof(board));
+    isWhiteTurn = isMaximizing;
+
     getAllMoves(isMaximizing, moves, &moveCount);
+
+    // Восстанавливаем глобальную доску
+    memcpy(board, saved_board, sizeof(board));
+    isWhiteTurn = saved_isWhiteTurn;
 
     if (moveCount == 0) {
         return isMaximizing ? -1000 : 1000;
     }
-    if (isMaximizing) {
-        int maxEval = -10000;
-        for (int i = 0; i < moveCount; i++) {
-            Piece newBoard[BOARD_SIZE][BOARD_SIZE];
-            memcpy(newBoard, tempBoard, sizeof(Piece) * BOARD_SIZE * BOARD_SIZE);
-            makeTempMove(newBoard, moves[i]);
-            int eval = minimax(newBoard, depth + 1, MAX_DEPTH, false, alpha, beta);
-            maxEval = eval > maxEval ? eval : maxEval;
-            alpha = alpha > eval ? alpha : eval;
+
+    int originalAlpha = alpha;
+    int originalBeta = beta;
+    int bestScore = isMaximizing ? -10000 : 10000;
+
+    // Перебираем ходы
+    for (int i = 0; i < moveCount; i++) {
+        // Создаем копию доски для симуляции хода
+        Piece newBoard[BOARD_SIZE][BOARD_SIZE];
+        memcpy(newBoard, tempBoard, sizeof(Piece) * BOARD_SIZE * BOARD_SIZE);
+
+        // Симулируем ход
+        makeTempMove(newBoard, moves[i]);
+
+        // Вычисляем хеш для новой позиции
+        uint64_t new_hash = compute_board_hash_for_board(newBoard, !isMaximizing);
+
+        int eval = minimax(newBoard, depth + 1, max_depth, !isMaximizing, alpha, beta, new_hash);
+
+        if (isMaximizing) {
+            if (eval > bestScore) bestScore = eval;
+            if (eval > alpha) alpha = eval;
             if (beta <= alpha) break;
         }
-        return maxEval;
-    }
-    else {
-        int minEval = 10000;
-        for (int i = 0; i < moveCount; i++) {
-            Piece newBoard[BOARD_SIZE][BOARD_SIZE];
-            memcpy(newBoard, tempBoard, sizeof(Piece) * BOARD_SIZE * BOARD_SIZE);
-            makeTempMove(newBoard, moves[i]);
-            int eval = minimax(newBoard, depth + 1, MAX_DEPTH, true, alpha, beta);
-            minEval = eval < minEval ? eval : minEval;
-            beta = beta < eval ? beta : eval;
+        else {
+            if (eval < bestScore) bestScore = eval;
+            if (eval < beta) beta = eval;
             if (beta <= alpha) break;
         }
-        return minEval;
     }
+
+    // Сохраняем результат в таблицу транспозиций
+    int flag = TT_EXACT;
+    if (bestScore <= originalAlpha) {
+        flag = TT_UPPER_BOUND;
+    }
+    else if (bestScore >= originalBeta) {
+        flag = TT_LOWER_BOUND;
+    }
+
+    tt_store(current_hash, max_depth - depth, bestScore, flag);
+
+    return bestScore;
 }
 
 void botMove() {
@@ -552,27 +719,39 @@ void botMove() {
     int bestScore = -10000;
     Move bestMove = moves[0];
 
+    // Вычисляем хеш текущей позиции (используем глобальную доску)
+    uint64_t current_hash = compute_board_hash();
+
     for (int i = 0; i < moveCount; i++) {
+        // Создаем копию глобальной доски
         Piece newBoard[BOARD_SIZE][BOARD_SIZE];
         memcpy(newBoard, board, sizeof(Piece) * BOARD_SIZE * BOARD_SIZE);
+
+        // Симулируем ход на копии
         makeTempMove(newBoard, moves[i]);
-        int score = minimax(newBoard, 0, MAX_DEPTH, true, -10000, 10000);
+
+        // Вычисляем хеш для новой позиции (ход перешел к белым)
+        uint64_t new_hash = compute_board_hash_for_board(newBoard, true);
+
+        int score = minimax(newBoard, 0, MAX_DEPTH, true, -10000, 10000, new_hash);
+
         if (score > bestScore) {
             bestScore = score;
             bestMove = moves[i];
         }
     }
 
+    // Реальный ход на глобальной доске
     makeMove(bestMove.from.x, bestMove.from.y, bestMove.to.x, bestMove.to.y,
         bestMove.is_capture, bestMove.capture.x, bestMove.capture.y);
 
+    // Обработка множественных взятий
     while (bestMove.is_capture) {
         Move captureMoves[20];
         int captureMoveCount = 0;
         getAllMoves(false, captureMoves, &captureMoveCount);
 
         bool foundContinuation = false;
-
         for (int i = 0; i < captureMoveCount; i++) {
             if (captureMoves[i].from.x == bestMove.to.x &&
                 captureMoves[i].from.y == bestMove.to.y &&
@@ -588,9 +767,9 @@ void botMove() {
                 break;
             }
         }
-
         if (!foundContinuation) break;
     }
+
     isWhiteTurn = true;
     updateGameOver();
 }
@@ -674,6 +853,9 @@ int main() {
     runBenchmarks();
     if (!glfwInit()) return -1;
 
+    init_zobrist();
+    clear_transposition_table();
+
     GLFWwindow* window = glfwCreateWindow(WINDOW_SIZE, WINDOW_SIZE, "Checkers", NULL, NULL);
     if (!window) {
         glfwTerminate();
@@ -738,6 +920,7 @@ int main() {
             gameMode = MODE_NONE;
         }
     }
+
     glfwTerminate();
     return 0;
 }
