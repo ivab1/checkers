@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #endif
 
-// Добавляем определения из checkers.c
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ checkers.c
 #define BOARD_SIZE 8
 typedef enum {
     EMPTY, BLACK, WHITE, BLACK_KING, WHITE_KING
@@ -26,7 +26,7 @@ typedef struct {
     bool is_capture;
 } Move;
 
-// Объявления функций из checkers.c
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ checkers.c
 extern void initBoard();
 extern int evaluatePosition();
 extern bool canCaptureFrom(int x, int y);
@@ -39,13 +39,15 @@ extern void makeMove(int x0, int y0, int x1, int y1, bool captured, int capX, in
 extern bool tryValidNormalOrCaptureMove(int x0, int y0, int x1, int y1, int* capX, int* capY, bool* captured);
 extern void updateGameOver();
 
-// Глобальные переменные из checkers.c
+extern uint64_t get_time_ns();
+
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ checkers.c
 extern Piece board[BOARD_SIZE][BOARD_SIZE];
 
 void bench_minimax_debug() {
     Piece tempBoard[BOARD_SIZE][BOARD_SIZE];
 
-    // Копируем доску
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             tempBoard[x][y] = board[x][y];
@@ -65,7 +67,7 @@ void bench_minimax_debug() {
     printf("minimax depth=6: result=%d, time=%.2f ms\n", result6, (end - start) / 1e6);
 }
 
-// Основная функция для запуска тестов
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void runTests() {
     bench_minimax_debug();
 }
