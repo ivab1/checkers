@@ -33,7 +33,7 @@ extern bool canCaptureFrom(int x, int y);
 extern bool hasValidMoves(bool forWhite);
 extern bool playerMustCapture();
 extern void getAllMoves(bool forWhite, Move* moves, int* moveCount);
-extern int minimax(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], int depth, bool isMaximizing, int alpha, int beta);
+extern int minimax(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], int depth, int max_depth, bool isMaximizing, int alpha, int beta);
 extern void botMove();
 extern void makeMove(int x0, int y0, int x1, int y1, bool captured, int capX, int capY);
 extern bool tryValidNormalOrCaptureMove(int x0, int y0, int x1, int y1, int* capX, int* capY, bool* captured);
@@ -125,7 +125,7 @@ void bench_minimax_shallow() {
             tempBoard[x][y] = board[x][y];
         }
     }
-    minimax(tempBoard, 2, true, -10000, 10000);
+    minimax(tempBoard, 0, 6, true, -10000, 10000);
 }
 
 void bench_simple_move() {

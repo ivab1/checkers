@@ -497,8 +497,8 @@ void makeTempMove(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], Move move) {
     else if (p == BLACK && move.to.y == BOARD_SIZE - 1) tempBoard[move.to.x][move.to.y] = BLACK_KING;
 }
 
-int minimax(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], int depth, bool isMaximizing, int alpha, int beta) {
-    if (depth == MAX_DEPTH) {
+int minimax(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], int depth, int max_depth, bool isMaximizing, int alpha, int beta) {
+    if (depth == max_depth) {
         return evaluatePosition();
     }
 
@@ -515,7 +515,7 @@ int minimax(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], int depth, bool isMaximizin
             Piece newBoard[BOARD_SIZE][BOARD_SIZE];
             memcpy(newBoard, tempBoard, sizeof(Piece) * BOARD_SIZE * BOARD_SIZE);
             makeTempMove(newBoard, moves[i]);
-            int eval = minimax(newBoard, depth + 1, false, alpha, beta);
+            int eval = minimax(newBoard, depth + 1, MAX_DEPTH, false, alpha, beta);
             maxEval = eval > maxEval ? eval : maxEval;
             alpha = alpha > eval ? alpha : eval;
             if (beta <= alpha) break;
@@ -528,7 +528,7 @@ int minimax(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], int depth, bool isMaximizin
             Piece newBoard[BOARD_SIZE][BOARD_SIZE];
             memcpy(newBoard, tempBoard, sizeof(Piece) * BOARD_SIZE * BOARD_SIZE);
             makeTempMove(newBoard, moves[i]);
-            int eval = minimax(newBoard, depth + 1, true, alpha, beta);
+            int eval = minimax(newBoard, depth + 1, MAX_DEPTH, true, alpha, beta);
             minEval = eval < minEval ? eval : minEval;
             beta = beta < eval ? beta : eval;
             if (beta <= alpha) break;
@@ -556,7 +556,7 @@ void botMove() {
         Piece newBoard[BOARD_SIZE][BOARD_SIZE];
         memcpy(newBoard, board, sizeof(Piece) * BOARD_SIZE * BOARD_SIZE);
         makeTempMove(newBoard, moves[i]);
-        int score = minimax(newBoard, 0, true, -10000, 10000);
+        int score = minimax(newBoard, 0, MAX_DEPTH, true, -10000, 10000);
         if (score > bestScore) {
             bestScore = score;
             bestMove = moves[i];
