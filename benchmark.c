@@ -11,6 +11,11 @@
 
 // Добавляем определения из checkers.c
 #define BOARD_SIZE 8
+#define TT_SIZE 100000
+#define TT_EXACT 0
+#define TT_LOWER_BOUND 1  
+#define TT_UPPER_BOUND 2
+
 typedef enum {
     EMPTY, BLACK, WHITE, BLACK_KING, WHITE_KING
 } Piece;
@@ -26,6 +31,13 @@ typedef struct {
     bool is_capture;
 } Move;
 
+typedef struct {
+    uint32_t hash_low;
+    int16_t score;
+    uint8_t depth;
+    uint8_t flag;
+} TTEntry;
+
 // Объявления функций из checkers.c
 extern void initBoard();
 extern int evaluatePosition();
@@ -33,7 +45,8 @@ extern bool canCaptureFrom(int x, int y);
 extern bool hasValidMoves(bool forWhite);
 extern bool playerMustCapture();
 extern void getAllMoves(bool forWhite, Move* moves, int* moveCount);
-extern int minimax(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], int depth, int max_depth, bool isMaximizing, int alpha, int beta);
+extern uint64_t compute_board_hash_for_board(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], bool is_white_turn);
+extern int minimax(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], int depth, int max_depth, bool isMaximizing, int alpha, int beta, uint64_t current_hash);
 extern void botMove();
 extern void makeMove(int x0, int y0, int x1, int y1, bool captured, int capX, int capY);
 extern bool tryValidNormalOrCaptureMove(int x0, int y0, int x1, int y1, int* capX, int* capY, bool* captured);
@@ -41,6 +54,8 @@ extern void updateGameOver();
 
 // Глобальные переменные из checkers.c
 extern Piece board[BOARD_SIZE][BOARD_SIZE];
+extern TTEntry transposition_table[TT_SIZE];
+extern bool isWhiteTurn;
 
 uint64_t get_time_ns() {
 #ifdef _WIN32
@@ -117,7 +132,7 @@ void bench_getAllMovesBlack() {
     getAllMoves(false, moves, &moveCount);
 }
 
-void bench_minimax_shallow() {
+void bench_minimax_with_tt() {
     Piece tempBoard[BOARD_SIZE][BOARD_SIZE];
     // Копируем текущую доску
     for (int y = 0; y < BOARD_SIZE; y++) {
@@ -125,7 +140,18 @@ void bench_minimax_shallow() {
             tempBoard[x][y] = board[x][y];
         }
     }
-    minimax(tempBoard, 0, 6, true, -10000, 10000);
+
+    uint64_t current_hash = compute_board_hash_for_board(tempBoard, true);
+    minimax(tempBoard, 0, 6, true, -10000, 10000, current_hash); // Уменьшили глубину для бенчмарка
+}
+
+void bench_compute_hash() {
+    compute_board_hash();
+}
+
+void bench_tt_lookup() {
+    uint64_t hash = compute_board_hash();
+    tt_lookup(hash);
 }
 
 void bench_simple_move() {
@@ -147,7 +173,9 @@ void runBenchmarks() {
     run_benchmark("tryValidNormalOrCaptureMove", bench_tryValidMove);
     run_benchmark("getAllMoves (white)", bench_getAllMovesWhite);
     run_benchmark("getAllMoves (black)", bench_getAllMovesBlack);
-    run_benchmark("minimax", bench_minimax_shallow);
+    run_benchmark("compute_board_hash", bench_compute_hash);
+    run_benchmark("tt_lookup", bench_tt_lookup);
+    run_benchmark("minimax", bench_minimax_with_tt);
     run_benchmark("makeMove", bench_simple_move);
 
     printf("\n=== BENCHMARKS COMPLETED ===\n");

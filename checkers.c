@@ -16,16 +16,16 @@
 #define MAX_DEPTH 6
 
 // Добавляем новые константы для TT
-#define TT_SIZE 100000  // 100K записей - оптимальный размер
-#define TT_EXACT 0
-#define TT_LOWER_BOUND 1
-#define TT_UPPER_BOUND 2
+#define TT_SIZE 100000     // 100K ячеек памяти для хранения оценок позиций
+#define TT_EXACT 0         // точная оценка, т.е. полностью просчитанная позиция
+#define TT_LOWER_BOUND 1   // минимальная оценка, т.е. позиция не хуже этого значения
+#define TT_UPPER_BOUND 2   // максимальная оценка, т.е. позиция не лучше этого значения
 
-// Структура для таблицы транспозиций (компактная - 8 байт)
+// Структура для таблицы транспозиций
 typedef struct {
-    uint32_t hash_low;  // Младшие 32 бита хеша
-    int16_t score;      // Оценка позиции
-    uint8_t depth;      // Глубина поиска
+    uint32_t hash_low;  // Младшие 32 бита хеша - номер страницы
+    int16_t score;      // Оценка позиции (от -32768 до 32767)
+    uint8_t depth;      // Глубина поиска (от 0 до 255)
     uint8_t flag;       // Тип оценки (EXACT/LOWER/UPPER)
 } TTEntry;
 
@@ -33,8 +33,8 @@ typedef struct {
 TTEntry transposition_table[TT_SIZE];
 
 // Zobrist ключи для хеширования
-uint64_t zobrist_table[BOARD_SIZE][BOARD_SIZE][5];
-uint64_t turn_key;
+uint64_t zobrist_table[BOARD_SIZE][BOARD_SIZE][5]; // таблица 8х8х5 случайных чисел (для каждой клетки и типа фигуры)
+uint64_t turn_key; // специальное число для смены хода
 
 extern void runTests();
 
@@ -98,8 +98,9 @@ bool isOpponent(Piece a, Piece b) {
 
 // Генерация случайных 64-битных чисел
 uint64_t random_64bit() {
-    // Используем простой PRNG, можно заменить на более качественный
+    // Используем простое базовое число, которое создается один раз при старте
     static uint64_t seed = 0x123456789ABCDEF;
+    // получаем следующее случайное число
     seed = seed * 6364136223846793005ULL + 1442695040888963407ULL;
     return seed;
 }
@@ -109,27 +110,32 @@ void init_zobrist() {
     for (int x = 0; x < BOARD_SIZE; x++) {
         for (int y = 0; y < BOARD_SIZE; y++) {
             for (int p = 0; p < 5; p++) { // 5 типов фигур: EMPTY, BLACK, WHITE, BLACK_KING, WHITE_KING
-                zobrist_table[x][y][p] = random_64bit();
+                zobrist_table[x][y][p] = random_64bit(); // заполняем ячейку случайным числом
             }
         }
     }
-    turn_key = random_64bit();
+    turn_key = random_64bit(); // генерируем число для смены кода
 }
 
 // Вычисление хеша для произвольной доски
+// на входе tempBoard - доска, для которой считаем хэш, 
+// is_white_turn - чей ход в этой позиции
 uint64_t compute_board_hash_for_board(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], bool is_white_turn) {
-    uint64_t hash = 0;
+    uint64_t hash = 0; // начинвем с чистого листа
 
     // Хешируем фигуры на переданной доске
     for (int x = 0; x < BOARD_SIZE; x++) {
         for (int y = 0; y < BOARD_SIZE; y++) {
-            Piece p = tempBoard[x][y];
+            Piece p = tempBoard[x][y]; // смотрим какая фигура на клетке
+            // берем число из таблицы для этой клетки и типа фигуры
+            // применяем оперрацию XOR к текущему хэшу
             hash ^= zobrist_table[x][y][p];
         }
     }
 
     // Хешируем чей ход
     if (is_white_turn) {
+        // добавляем число для белых через XOR
         hash ^= turn_key;
     }
 
@@ -141,30 +147,31 @@ uint64_t compute_board_hash() {
     return compute_board_hash_for_board(board, isWhiteTurn);
 }
 
-// Очистка таблицы транспозиций
+// Очистка/обнуление таблицы транспозиций
 void clear_transposition_table() {
     memset(transposition_table, 0, sizeof(transposition_table));
 }
 
 // Поиск в таблице транспозиций
 TTEntry* tt_lookup(uint64_t hash) {
-    uint32_t index = hash % TT_SIZE;
-    uint32_t hash_low = (uint32_t)(hash & 0xFFFFFFFF);
+    uint32_t index = hash % TT_SIZE; // вычисляется номер ячейки в таблице (хэш делится на 100к, остаток - индекс)
+    uint32_t hash_low = (uint32_t)(hash & 0xFFFFFFFF); // берутся младшие 32 бита хэша
 
+    // если в ячейке тот же хэш, что и искомый
     if (transposition_table[index].hash_low == hash_low) {
-        return &transposition_table[index];
+        return &transposition_table[index]; // возвращаем указатель на эту запись
     }
     return NULL;
 }
 
 // Сохранение в таблицу транспозиций
 void tt_store(uint64_t hash, int depth, int score, int flag) {
-    if (depth < 0 || depth > 255) return;
+    if (depth < 0 || depth > 255) return; // глубина должна быть в допустимых пределах
 
-    uint32_t index = hash % TT_SIZE;
-    uint32_t hash_low = (uint32_t)(hash & 0xFFFFFFFF);
+    uint32_t index = hash % TT_SIZE; // вычисляется номер ячейки в таблице (хэш делится на 100к, остаток - индекс)
+    uint32_t hash_low = (uint32_t)(hash & 0xFFFFFFFF); // берутся младшие 32 бита хэша
 
-    // Всегда заменяем - простая стратегия
+    // записываем новую запись в таблицу
     transposition_table[index] = (TTEntry){
         .hash_low = hash_low,
         .score = (int16_t)score,
@@ -601,9 +608,9 @@ void makeTempMove(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], Move move) {
 
 int minimax(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], int depth, int max_depth, bool isMaximizing, int alpha, int beta, uint64_t current_hash) {
     // Проверяем таблицу транспозиций
-    TTEntry* entry = tt_lookup(current_hash);
-    if (entry != NULL && entry->depth >= max_depth - depth) {
-        // Нашли подходящую запись в кэше
+    TTEntry* entry = tt_lookup(current_hash); // ищем позицию
+    if (entry != NULL && entry->depth >= max_depth - depth) { // если нашли и глубина достаточная
+        // Используем найденную запись для ускорения альфа-бета отсечения
         switch (entry->flag) {
         case TT_EXACT:
             return entry->score;
@@ -699,6 +706,7 @@ int minimax(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], int depth, int max_depth, b
         flag = TT_LOWER_BOUND;
     }
 
+    // сохраняем результат в таблицу
     tt_store(current_hash, max_depth - depth, bestScore, flag);
 
     return bestScore;
