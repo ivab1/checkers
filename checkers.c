@@ -117,15 +117,15 @@ uint64_t compute_board_hash_for_board(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], b
     uint64_t hash = 0; // начинвем с чистого листа
 
     // Хешируем фигуры на переданной доске
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x += 2) { // Развертка шагом 2
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y += 2) { // Развертка шагом 2
             // Обрабатываем две клетки за итерацию
             Piece p1 = tempBoard[x][y];
             hash ^= zobrist_table[x][y][p1];
 
-            if (x + 1 < BOARD_SIZE) {
-                Piece p2 = tempBoard[x + 1][y];
-                hash ^= zobrist_table[x + 1][y][p2];
+            if (y + 1 < BOARD_SIZE) {
+                Piece p2 = tempBoard[x][y+1];
+                hash ^= zobrist_table[x][y+1][p2];
             }
         }
     }
@@ -241,8 +241,8 @@ bool canCaptureFrom(int x, int y) {
 
 bool hasValidMoves(bool forWhite) {
     const int dirs[4][2] = { {1,1}, {-1,1}, {1,-1}, {-1,-1} };
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x++) {
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
             Piece p = board[x][y];
             if ((forWhite && (p == WHITE || p == WHITE_KING)) || (!forWhite && (p == BLACK || p == BLACK_KING))) {
                 for (int d = 0; d < 4; d++) {
@@ -278,8 +278,8 @@ bool hasValidMoves(bool forWhite) {
 }
 
 void drawBoardSquares() {
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x++) {
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
             if ((x + y) % 2 == 0)
                 glColor3f(0.8f, 0.8f, 0.8f);
             else
@@ -302,8 +302,8 @@ void drawBoardSquares() {
 }
 
 void highlightCaptureMoves() {
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x++) {
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
             Piece p = board[x][y];
             if ((gameMode == MODE_PVP) || (gameMode == MODE_PVBOT && isWhiteTurn)) {
                 if (((isWhiteTurn && (p == WHITE || p == WHITE_KING)) || (!isWhiteTurn && (p == BLACK || p == BLACK_KING))) && canCaptureFrom(x, y)) {
@@ -349,9 +349,9 @@ void drawPieces() {
         vertices_precomputed = true;
     }
 
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        float cy = y * CELL_SIZE + HALF_CELL;
-        for (int x = 0; x < BOARD_SIZE; x++) {
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        float cx = x * CELL_SIZE + HALF_CELL;
+        for (int y = 0; y < BOARD_SIZE; y++) {
             Piece p = board[x][y];
             if (p != EMPTY) {
                 if (p == WHITE || p == WHITE_KING)
@@ -359,7 +359,7 @@ void drawPieces() {
                 else
                     glColor3f(0.1f, 0.1f, 0.1f);
 
-                float cx = x * CELL_SIZE + HALF_CELL;
+                float cy = y * CELL_SIZE + HALF_CELL;
 
                 glBegin(GL_TRIANGLE_FAN);
                 glVertex2f(cx, cy);
@@ -389,18 +389,18 @@ void drawPieces() {
 }
 
 bool playerMustCapture() {
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x += 2) { 
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y += 2) { 
             Piece p1 = board[x][y];
             bool is_current1 = (isWhiteTurn && (p1 == WHITE || p1 == WHITE_KING)) ||
                 (!isWhiteTurn && (p1 == BLACK || p1 == BLACK_KING));
             if (is_current1 && canCaptureFrom(x, y)) return true;
 
-            if (x + 1 < BOARD_SIZE) {
-                Piece p2 = board[x + 1][y];
+            if (y + 1 < BOARD_SIZE) {
+                Piece p2 = board[x][y+1];
                 bool is_current2 = (isWhiteTurn && (p2 == WHITE || p2 == WHITE_KING)) ||
                     (!isWhiteTurn && (p2 == BLACK || p2 == BLACK_KING));
-                if (is_current2 && canCaptureFrom(x + 1, y)) return true;
+                if (is_current2 && canCaptureFrom(x, y+1)) return true;
             }
         }
     }
@@ -506,14 +506,14 @@ void makeMove(int x0, int y0, int x1, int y1, bool captured, int capX, int capY)
 void updateGameOver() {
     bool whiteExists = false, blackExists = false;
 
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x += 2) {
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y += 2) {
             Piece p1 = board[x][y];
             if (p1 == WHITE || p1 == WHITE_KING) whiteExists = true;
             if (p1 == BLACK || p1 == BLACK_KING) blackExists = true;
 
-            if (x + 1 < BOARD_SIZE) {
-                Piece p2 = board[x + 1][y];
+            if (y + 1 < BOARD_SIZE) {
+                Piece p2 = board[x][y+1];
                 if (p2 == WHITE || p2 == WHITE_KING) whiteExists = true;
                 if (p2 == BLACK || p2 == BLACK_KING) blackExists = true;
             }
@@ -578,8 +578,8 @@ void getAllMoves(bool forWhite, Move* moves, int* moveCount) {
     *moveCount = 0;
     bool mustCapture = false;
 
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x++) {
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
             Piece p = board[x][y];
             if ((forWhite && (p == WHITE || p == WHITE_KING)) || (!forWhite && (p == BLACK || p == BLACK_KING))) {
                 if (canCaptureFrom(x, y)) {
@@ -592,8 +592,8 @@ void getAllMoves(bool forWhite, Move* moves, int* moveCount) {
     }
 
     const int dirs[4][2] = { {1,1}, {-1,1}, {1,-1}, {-1,-1} };
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x++) {
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
             Piece p = board[x][y];
             if ((forWhite && (p == WHITE || p == WHITE_KING)) || (!forWhite && (p == BLACK || p == BLACK_KING))) {
                 for (int d = 0; d < 4; d++) {
