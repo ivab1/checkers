@@ -231,11 +231,11 @@ bool hasValidMoves(bool forWhite) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
             if ((forWhite && isWhite(p)) || (!forWhite && isBlack(p))) {
-
+                bool is_king = isKing(p);
                 for (int d = 0; d < 4; d++) {
                     int dx = dirs[d][0], dy = dirs[d][1];
 
-                    if (isKing(p)) {
+                    if (is_king) {
                         int nx = x + dx, ny = y + dy;
                         while (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
                             if (board[nx][ny] == EMPTY) return true;
