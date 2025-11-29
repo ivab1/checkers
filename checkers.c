@@ -483,9 +483,16 @@ void updateGameOver() {
     bool whiteExists = false, blackExists = false;
 
     for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x++) {
-            if (board[x][y] == WHITE || board[x][y] == WHITE_KING) whiteExists = true;
-            if (board[x][y] == BLACK || board[x][y] == BLACK_KING) blackExists = true;
+        for (int x = 0; x < BOARD_SIZE; x += 2) {
+            Piece p1 = board[x][y];
+            if (p1 == WHITE || p1 == WHITE_KING) whiteExists = true;
+            if (p1 == BLACK || p1 == BLACK_KING) blackExists = true;
+
+            if (x + 1 < BOARD_SIZE) {
+                Piece p2 = board[x + 1][y];
+                if (p2 == WHITE || p2 == WHITE_KING) whiteExists = true;
+                if (p2 == BLACK || p2 == BLACK_KING) blackExists = true;
+            }
         }
     }
 
