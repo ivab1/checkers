@@ -363,8 +363,11 @@ void drawPieces() {
 
                 glBegin(GL_TRIANGLE_FAN);
                 glVertex2f(cx, cy);
-                for (int i = 0; i <= 36; i++) {
+                for (int i = 0; i <= 36; i += 4) {
                     glVertex2f(cx + circle_vertices_x[i] * radius, cy + circle_vertices_y[i] * radius);
+                    if (i + 1 <= 36) glVertex2f(cx + circle_vertices_x[i + 1] * radius, cy + circle_vertices_y[i + 1] * radius);
+                    if (i + 2 <= 36) glVertex2f(cx + circle_vertices_x[i + 2] * radius, cy + circle_vertices_y[i + 2] * radius);
+                    if (i + 3 <= 36) glVertex2f(cx + circle_vertices_x[i + 3] * radius, cy + circle_vertices_y[i + 3] * radius);
                 }
                 glEnd();
 
@@ -372,8 +375,11 @@ void drawPieces() {
                     glColor3f(1.0f, 0.0f, 0.0f);
                     glBegin(GL_TRIANGLE_FAN);
                     glVertex2f(cx, cy);
-                    for (int i = 0; i <= 36; i++) {
+                    for (int i = 0; i <= 36; i += 4) {
                         glVertex2f(cx + circle_vertices_x[i] * inner, cy + circle_vertices_y[i] * inner);
+                        if (i + 1 <= 36) glVertex2f(cx + circle_vertices_x[i + 1] * inner, cy + circle_vertices_y[i + 1] * inner);
+                        if (i + 2 <= 36) glVertex2f(cx + circle_vertices_x[i + 2] * inner, cy + circle_vertices_y[i + 2] * inner);
+                        if (i + 3 <= 36) glVertex2f(cx + circle_vertices_x[i + 3] * inner, cy + circle_vertices_y[i + 3] * inner);
                     }
                     glEnd();
                 }
