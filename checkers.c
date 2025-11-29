@@ -373,15 +373,15 @@ bool tryValidNormalOrCaptureMove(int x0, int y0, int x1, int y1, int* capX, int*
     if (board[x1][y1] != EMPTY) return false;
 
     int dx = x1 - x0, dy = y1 - y0;
-
+    int abs_dx = abs(dx), abs_dy = abs(dy);
     if (!isKing(p)) {
-        if (abs(dx) == 1 && abs(dy) == 1) {
+        if (abs_dx == 1 && abs_dy == 1) {
             if (playerMustCapture()) return false;
             if (isWhite(p) && dy == -1) return true;
             if (isBlack(p) && dy == 1) return true;
             return false;
         }
-        if (abs(dx) == 2 && abs(dy) == 2) {
+        if (abs_dx == 2 && abs_dy == 2) {
             int midX = x0 + dx / 2, midY = y0 + dy / 2;
             if (isOpponent(p, board[midX][midY])) {
                 *captured = true;
@@ -394,7 +394,7 @@ bool tryValidNormalOrCaptureMove(int x0, int y0, int x1, int y1, int* capX, int*
         return false;
     }
     else {
-        if (abs(dx) != abs(dy)) return false;
+        if (abs_dx != abs_dy) return false;
 
         int stepX = (dx > 0) ? 1 : -1;
         int stepY = (dy > 0) ? 1 : -1;
