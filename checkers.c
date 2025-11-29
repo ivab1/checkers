@@ -316,7 +316,21 @@ void drawPieces() {
     const float HALF_CELL = CELL_SIZE * 0.5f;
     const float ANGLE_STEP = 10.0f * (float)M_PI / 180.0f;
 
+    static float circle_vertices_x[37], circle_vertices_y[37];
+    static bool vertices_precomputed = false;
+
+    if (!vertices_precomputed) {
+        float angle = 0.0f;
+        for (int i = 0; i <= 36; i++) {
+            circle_vertices_x[i] = cosf(angle);
+            circle_vertices_y[i] = sinf(angle);
+            angle += ANGLE_STEP;
+        }
+        vertices_precomputed = true;
+    }
+
     for (int y = 0; y < BOARD_SIZE; y++) {
+        float cy = y * CELL_SIZE + HALF_CELL;
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
             if (p != EMPTY) {
@@ -324,14 +338,11 @@ void drawPieces() {
                 else glColor3f(0.1f, 0.1f, 0.1f);
 
                 float cx = x * CELL_SIZE + HALF_CELL;
-                float cy = y * CELL_SIZE + HALF_CELL;
 
                 glBegin(GL_TRIANGLE_FAN);
                 glVertex2f(cx, cy);
-                float angle = 0.0f;
                 for (int i = 0; i <= 36; i++) {
-                    glVertex2f(cx + cosf(angle) * radius, cy + sinf(angle) * radius);
-                    angle += ANGLE_STEP;
+                    glVertex2f(cx + circle_vertices_x[i] * radius, cy + circle_vertices_y[i] * radius);
                 }
                 glEnd();
 
@@ -340,10 +351,8 @@ void drawPieces() {
 
                     glBegin(GL_TRIANGLE_FAN);
                     glVertex2f(cx, cy);
-                    angle = 0.0f;
                     for (int i = 0; i <= 36; i++) {
-                        glVertex2f(cx + cosf(angle) * inner, cy + sinf(angle) * inner);
-                        angle += ANGLE_STEP;
+                        glVertex2f(cx + circle_vertices_x[i] * inner, cy + circle_vertices_y[i] * inner);
                     }
                     glEnd();
                 }
