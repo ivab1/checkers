@@ -312,8 +312,10 @@ void highlightCaptureMoves() {
 
 void drawPieces() {
     float radius = CELL_SIZE * 0.35f;
-    float inner = radius / 2;
-    const float HALF_CELL = CELL_SIZE / 2.0f;
+    float inner = radius * 0.5f;
+    const float HALF_CELL = CELL_SIZE * 0.5f;
+    const float ANGLE_STEP = 10.0f * (float)M_PI / 180.0f;
+
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
@@ -326,9 +328,10 @@ void drawPieces() {
 
                 glBegin(GL_TRIANGLE_FAN);
                 glVertex2f(cx, cy);
-                for (int i = 0; i <= 360; i += 10) {
-                    float angle = i * M_PI / 180.0f;
+                float angle = 0.0f;
+                for (int i = 0; i <= 36; i++) {
                     glVertex2f(cx + cosf(angle) * radius, cy + sinf(angle) * radius);
+                    angle += ANGLE_STEP;
                 }
                 glEnd();
 
@@ -337,9 +340,10 @@ void drawPieces() {
 
                     glBegin(GL_TRIANGLE_FAN);
                     glVertex2f(cx, cy);
-                    for (int i = 0; i <= 360; i += 10) {
-                        float angle = i * M_PI / 180.0f;
+                    angle = 0.0f;
+                    for (int i = 0; i <= 36; i++) {
                         glVertex2f(cx + cosf(angle) * inner, cy + sinf(angle) * inner);
+                        angle += ANGLE_STEP;
                     }
                     glEnd();
                 }
