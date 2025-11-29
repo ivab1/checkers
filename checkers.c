@@ -190,14 +190,17 @@ bool canCaptureFrom(int x, int y) {
         int dx = dirs[d][0], dy = dirs[d][1];
         int nx = x + dx, ny = y + dy;
 
-        bool withinBounds = (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE);
+        if (!(nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE))
+            continue;
 
-        while (withinBounds) {
+        while (true) {
             if (board[nx][ny] != EMPTY) {
                 Piece opponent = board[nx][ny];
-                if (!(p == EMPTY || opponent == EMPTY) &&
+                bool is_opponent = !(p == EMPTY || opponent == EMPTY) &&
                     (((p == WHITE || p == WHITE_KING) && (opponent == BLACK || opponent == BLACK_KING)) ||
-                        ((p == BLACK || p == BLACK_KING) && (opponent == WHITE || opponent == WHITE_KING)))) {
+                        ((p == BLACK || p == BLACK_KING) && (opponent == WHITE || opponent == WHITE_KING)));
+
+                if (is_opponent) {
                     int cx = nx + dx, cy = ny + dy;
                     if (cx >= 0 && cx < BOARD_SIZE && cy >= 0 && cy < BOARD_SIZE && board[cx][cy] == EMPTY) {
                         return true;
@@ -206,9 +209,11 @@ bool canCaptureFrom(int x, int y) {
                 break;
             }
             if (!(p == BLACK_KING || p == WHITE_KING)) break;
+
             nx += dx;
             ny += dy;
-            withinBounds = (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE);
+            if (!(nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE))
+                break;
         }
     }
     return false;
