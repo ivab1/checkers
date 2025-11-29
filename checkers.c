@@ -207,7 +207,9 @@ bool canCaptureFrom(int x, int y) {
         int dx = dirs[d][0], dy = dirs[d][1];
         int nx = x + dx, ny = y + dy;
 
-        while (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
+        bool withinBounds = (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE);
+
+        while (withinBounds) {
             if (board[nx][ny] != EMPTY) {
                 if (isOpponent(p, board[nx][ny])) {
                     int cx = nx + dx, cy = ny + dy;
@@ -921,11 +923,7 @@ int main() {
                 static double lastMoveTime = 0.0;
                 double currentTime = glfwGetTime();
                 if (currentTime - lastMoveTime > 0.7) {
-                    double start_time = glfwGetTime();
                     botMove();
-                    double end_time = glfwGetTime();
-                    double time_spent = end_time - start_time;
-                    printf("botMove: time = %.4f sec\n", time_spent);
                     lastMoveTime = currentTime;
                 }
             }
