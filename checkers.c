@@ -77,23 +77,6 @@ int gameMode = MODE_NONE;
 static char endGameTitle[64] = "";
 static char endGameMessage[64] = "";
 
-bool isKing(Piece p) {
-    return p == BLACK_KING || p == WHITE_KING;
-}
-
-bool isWhite(Piece p) {
-    return p == WHITE || p == WHITE_KING;
-}
-
-bool isBlack(Piece p) {
-    return p == BLACK || p == BLACK_KING;
-}
-
-bool isOpponent(Piece a, Piece b) {
-    if (a == EMPTY || b == EMPTY) return false;
-    return (isWhite(a) && isBlack(b)) || (isBlack(a) && isWhite(b));
-}
-
 
 
 // Генерация случайных 64-битных чисел
@@ -211,7 +194,10 @@ bool canCaptureFrom(int x, int y) {
 
         while (withinBounds) {
             if (board[nx][ny] != EMPTY) {
-                if (isOpponent(p, board[nx][ny])) {
+                Piece opponent = board[nx][ny];
+                if (!(p == EMPTY || opponent == EMPTY) &&
+                    (((p == WHITE || p == WHITE_KING) && (opponent == BLACK || opponent == BLACK_KING)) ||
+                        ((p == BLACK || p == BLACK_KING) && (opponent == WHITE || opponent == WHITE_KING)))) {
                     int cx = nx + dx, cy = ny + dy;
                     if (cx >= 0 && cx < BOARD_SIZE && cy >= 0 && cy < BOARD_SIZE && board[cx][cy] == EMPTY) {
                         return true;
@@ -219,9 +205,10 @@ bool canCaptureFrom(int x, int y) {
                 }
                 break;
             }
-            if (!isKing(p)) break;
+            if (!(p == BLACK_KING || p == WHITE_KING)) break;
             nx += dx;
             ny += dy;
+            withinBounds = (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE);
         }
     }
     return false;
@@ -232,12 +219,11 @@ bool hasValidMoves(bool forWhite) {
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
-            if ((forWhite && isWhite(p)) || (!forWhite && isBlack(p))) {
-                bool is_king = isKing(p);
+            if ((forWhite && (p == WHITE || p == WHITE_KING)) || (!forWhite && (p == BLACK || p == BLACK_KING))) {
                 for (int d = 0; d < 4; d++) {
                     int dx = dirs[d][0], dy = dirs[d][1];
 
-                    if (is_king) {
+                    if (p == BLACK_KING || p == WHITE_KING) {
                         int nx = x + dx, ny = y + dy;
                         while (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
                             if (board[nx][ny] == EMPTY) return true;
@@ -250,7 +236,7 @@ bool hasValidMoves(bool forWhite) {
                         int nx = x + dx, ny = y + dy;
                         if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
                             if (board[nx][ny] == EMPTY) {
-                                if ((isWhite(p) && dy == -1) || (isBlack(p) && dy == 1)) {
+                                if (((p == WHITE || p == WHITE_KING) && dy == -1) || ((p == BLACK || p == BLACK_KING) && dy == 1)) {
                                     return true;
                                 }
                             }
@@ -295,7 +281,7 @@ void highlightCaptureMoves() {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
             if ((gameMode == MODE_PVP) || (gameMode == MODE_PVBOT && isWhiteTurn)) {
-                if (((isWhiteTurn && isWhite(p)) || (!isWhiteTurn && isBlack(p))) && canCaptureFrom(x, y)) {
+                if (((isWhiteTurn && (p == WHITE || p == WHITE_KING)) || (!isWhiteTurn && (p == BLACK || p == BLACK_KING))) && canCaptureFrom(x, y)) {
                     glEnable(GL_BLEND);
                     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                     glColor4f(1.0f, 0.0f, 0.0f, 0.3f);
@@ -336,8 +322,10 @@ void drawPieces() {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
             if (p != EMPTY) {
-                if (isWhite(p)) glColor3f(1.0f, 1.0f, 1.0f);
-                else glColor3f(0.1f, 0.1f, 0.1f);
+                if (p == WHITE || p == WHITE_KING)
+                    glColor3f(1.0f, 1.0f, 1.0f);
+                else
+                    glColor3f(0.1f, 0.1f, 0.1f);
 
                 float cx = x * CELL_SIZE + HALF_CELL;
 
@@ -348,9 +336,8 @@ void drawPieces() {
                 }
                 glEnd();
 
-                if (isKing(p)) {
+                if (p == BLACK_KING || p == WHITE_KING) {
                     glColor3f(1.0f, 0.0f, 0.0f);
-
                     glBegin(GL_TRIANGLE_FAN);
                     glVertex2f(cx, cy);
                     for (int i = 0; i <= 36; i++) {
@@ -367,8 +354,8 @@ bool playerMustCapture() {
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
-            if (isWhiteTurn && isWhite(p) && canCaptureFrom(x, y)) return true;
-            if (!isWhiteTurn && isBlack(p) && canCaptureFrom(x, y)) return true;
+            if (isWhiteTurn && (p == WHITE || p == WHITE_KING) && canCaptureFrom(x, y)) return true;
+            if (!isWhiteTurn && (p == BLACK || p == BLACK_KING) && canCaptureFrom(x, y)) return true;
         }
     }
     return false;
@@ -385,17 +372,22 @@ bool tryValidNormalOrCaptureMove(int x0, int y0, int x1, int y1, int* capX, int*
 
     int dx = x1 - x0, dy = y1 - y0;
     int abs_dx = abs(dx), abs_dy = abs(dy);
-    if (!isKing(p)) {
+
+    if (!(p == BLACK_KING || p == WHITE_KING)) {
         if (abs_dx == 1 && abs_dy == 1) {
             if (playerMustCapture()) return false;
-            if (isWhite(p) && dy == -1) return true;
-            if (isBlack(p) && dy == 1) return true;
+            if ((p == WHITE && dy == -1) || (p == BLACK && dy == 1)) {
+                return true;
+            }
             return false;
         }
         if (abs_dx == 2 && abs_dy == 2) {
             int midX = x0 + (dx >> 1);  
             int midY = y0 + (dy >> 1);  
-            if (isOpponent(p, board[midX][midY])) {
+            Piece opponent = board[midX][midY];
+            if (!(p == EMPTY || opponent == EMPTY) &&
+                (((p == WHITE || p == WHITE_KING) && (opponent == BLACK || opponent == BLACK_KING)) ||
+                    ((p == BLACK || p == BLACK_KING) && (opponent == WHITE || opponent == WHITE_KING)))) {
                 *captured = true;
                 *capX = midX;
                 *capY = midY;
@@ -417,7 +409,10 @@ bool tryValidNormalOrCaptureMove(int x0, int y0, int x1, int y1, int* capX, int*
 
         while (cx != x1 && cy != y1) {
             if (board[cx][cy] != EMPTY) {
-                if (isOpponent(p, board[cx][cy])) {
+                Piece opponent = board[cx][cy];
+                if (!(p == EMPTY || opponent == EMPTY) &&
+                    (((p == WHITE || p == WHITE_KING) && (opponent == BLACK || opponent == BLACK_KING)) ||
+                        ((p == BLACK || p == BLACK_KING) && (opponent == WHITE || opponent == WHITE_KING)))) {
                     opponentCount++;
                     opX = cx;
                     opY = cy;
@@ -467,8 +462,8 @@ void updateGameOver() {
 
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
-            if (isWhite(board[x][y])) whiteExists = true;
-            if (isBlack(board[x][y])) blackExists = true;
+            if (board[x][y] == WHITE || board[x][y] == WHITE_KING) whiteExists = true;
+            if (board[x][y] == BLACK || board[x][y] == BLACK_KING) blackExists = true;
         }
     }
 
@@ -549,11 +544,10 @@ void getAllMoves(bool forWhite, Move* moves, int* moveCount) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
             if ((forWhite && (p == WHITE || p == WHITE_KING)) || (!forWhite && (p == BLACK || p == BLACK_KING))) {
-                bool is_king = isKing(p);
                 for (int d = 0; d < 4; d++) {
                     int dx = dirs[d][0], dy = dirs[d][1];
                     int nx = x + dx, ny = y + dy;
-                    if (is_king) {
+                    if (p == BLACK_KING || p == WHITE_KING) {
                         while (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
                             if (board[nx][ny] == EMPTY) {
                                 if (!mustCapture) {
@@ -564,7 +558,10 @@ void getAllMoves(bool forWhite, Move* moves, int* moveCount) {
                                 }
                             }
                             else {
-                                if (isOpponent(p, board[nx][ny])) {
+                                Piece opponent = board[nx][ny];
+                                if (!(p == EMPTY || opponent == EMPTY) &&
+                                    (((p == WHITE || p == WHITE_KING) && (opponent == BLACK || opponent == BLACK_KING)) ||
+                                        ((p == BLACK || p == BLACK_KING) && (opponent == WHITE || opponent == WHITE_KING)))) {
                                     int cx = nx + dx, cy = ny + dy;
                                     if (cx >= 0 && cx < BOARD_SIZE && cy >= 0 && cy < BOARD_SIZE && board[cx][cy] == EMPTY) {
                                         moves[*moveCount].from = (Position){ x, y };
@@ -590,14 +587,19 @@ void getAllMoves(bool forWhite, Move* moves, int* moveCount) {
                                     (*moveCount)++;
                                 }
                             }
-                            else if (isOpponent(p, board[nx][ny])) {
-                                int cx = nx + dx, cy = ny + dy;
-                                if (cx >= 0 && cx < BOARD_SIZE && cy >= 0 && cy < BOARD_SIZE && board[cx][cy] == EMPTY) {
-                                    moves[*moveCount].from = (Position){ x, y };
-                                    moves[*moveCount].to = (Position){ cx, cy };
-                                    moves[*moveCount].capture = (Position){ nx, ny };
-                                    moves[*moveCount].is_capture = true;
-                                    (*moveCount)++;
+                            else {
+                                Piece opponent = board[nx][ny];
+                                if (!(p == EMPTY || opponent == EMPTY) &&
+                                    (((p == WHITE || p == WHITE_KING) && (opponent == BLACK || opponent == BLACK_KING)) ||
+                                        ((p == BLACK || p == BLACK_KING) && (opponent == WHITE || opponent == WHITE_KING)))) {
+                                    int cx = nx + dx, cy = ny + dy;
+                                    if (cx >= 0 && cx < BOARD_SIZE && cy >= 0 && cy < BOARD_SIZE && board[cx][cy] == EMPTY) {
+                                        moves[*moveCount].from = (Position){ x, y };
+                                        moves[*moveCount].to = (Position){ cx, cy };
+                                        moves[*moveCount].capture = (Position){ nx, ny };
+                                        moves[*moveCount].is_capture = true;
+                                        (*moveCount)++;
+                                    }
                                 }
                             }
                         }
@@ -819,7 +821,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 
             if (selected.x == -1) {
                 if (clicked != EMPTY) {
-                    if ((isWhiteTurn && isWhite(clicked)) || (!isWhiteTurn && isBlack(clicked))) {
+                    if ((isWhiteTurn && (clicked == WHITE || clicked == WHITE_KING)) || (!isWhiteTurn && (clicked == BLACK || clicked == BLACK_KING))) {
                         selected.x = boardX;
                         selected.y = boardY;
                     }
