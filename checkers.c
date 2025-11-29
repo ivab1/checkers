@@ -107,12 +107,16 @@ uint64_t compute_board_hash_for_board(Piece tempBoard[BOARD_SIZE][BOARD_SIZE], b
     uint64_t hash = 0; // начинвем с чистого листа
 
     // Хешируем фигуры на переданной доске
-    for (int x = 0; x < BOARD_SIZE; x++) {
-        for (int y = 0; y < BOARD_SIZE; y++) {
-            Piece p = tempBoard[x][y]; // смотрим какая фигура на клетке
-            // берем число из таблицы для этой клетки и типа фигуры
-            // применяем оперрацию XOR к текущему хэшу
-            hash ^= zobrist_table[x][y][p];
+    for (int y = 0; y < BOARD_SIZE; y++) {
+        for (int x = 0; x < BOARD_SIZE; x += 2) { // Развертка шагом 2
+            // Обрабатываем две клетки за итерацию
+            Piece p1 = tempBoard[x][y];
+            hash ^= zobrist_table[x][y][p1];
+
+            if (x + 1 < BOARD_SIZE) {
+                Piece p2 = tempBoard[x + 1][y];
+                hash ^= zobrist_table[x + 1][y][p2];
+            }
         }
     }
 
