@@ -90,17 +90,20 @@ uint64_t random_64bit() {
 
 // Инициализация Zobrist таблицы
 void init_zobrist() {
-    for (int x = 0; x < BOARD_SIZE; x += 2) { // Шаг 2 по x
+    for (int x = 0; x < BOARD_SIZE; x++) {
         for (int y = 0; y < BOARD_SIZE; y += 2) { // Шаг 2 по y
-            // Обрабатываем блок 2x2 за итерацию
-            for (int dx = 0; dx < 2 && x + dx < BOARD_SIZE; dx++) {
-                for (int dy = 0; dy < 2 && y + dy < BOARD_SIZE; dy++) {
-                    zobrist_table[x + dx][y + dy][EMPTY] = random_64bit();
-                    zobrist_table[x + dx][y + dy][BLACK] = random_64bit();
-                    zobrist_table[x + dx][y + dy][WHITE] = random_64bit();
-                    zobrist_table[x + dx][y + dy][BLACK_KING] = random_64bit();
-                    zobrist_table[x + dx][y + dy][WHITE_KING] = random_64bit();
-                }
+            zobrist_table[x][y][EMPTY] = random_64bit();
+            zobrist_table[x][y][BLACK] = random_64bit();
+            zobrist_table[x][y][WHITE] = random_64bit();
+            zobrist_table[x][y][BLACK_KING] = random_64bit();
+            zobrist_table[x][y][WHITE_KING] = random_64bit();
+
+            if (y + 1 < BOARD_SIZE) {
+                zobrist_table[x][y + 1][EMPTY] = random_64bit();
+                zobrist_table[x][y + 1][BLACK] = random_64bit();
+                zobrist_table[x][y + 1][WHITE] = random_64bit();
+                zobrist_table[x][y + 1][BLACK_KING] = random_64bit();
+                zobrist_table[x][y + 1][WHITE_KING] = random_64bit();
             }
         }
     }
