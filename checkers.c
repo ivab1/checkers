@@ -313,6 +313,7 @@ void highlightCaptureMoves() {
 void drawPieces() {
     float radius = CELL_SIZE * 0.35f;
     float inner = radius / 2;
+    const float HALF_CELL = CELL_SIZE / 2.0f;
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
@@ -320,8 +321,8 @@ void drawPieces() {
                 if (isWhite(p)) glColor3f(1.0f, 1.0f, 1.0f);
                 else glColor3f(0.1f, 0.1f, 0.1f);
 
-                float cx = x * CELL_SIZE + CELL_SIZE / 2;
-                float cy = y * CELL_SIZE + CELL_SIZE / 2;
+                float cx = x * CELL_SIZE + HALF_CELL;
+                float cy = y * CELL_SIZE + HALF_CELL;
 
                 glBegin(GL_TRIANGLE_FAN);
                 glVertex2f(cx, cy);
