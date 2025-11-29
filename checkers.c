@@ -532,11 +532,11 @@ void getAllMoves(bool forWhite, Move* moves, int* moveCount) {
         if (mustCapture) break;
     }
 
+    const int dirs[4][2] = { {1,1}, {-1,1}, {1,-1}, {-1,-1} };
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
             if ((forWhite && (p == WHITE || p == WHITE_KING)) || (!forWhite && (p == BLACK || p == BLACK_KING))) {
-                int dirs[4][2] = { {1,1}, {-1,1}, {1,-1}, {-1,-1} };
                 for (int d = 0; d < 4; d++) {
                     int dx = dirs[d][0], dy = dirs[d][1];
                     int nx = x + dx, ny = y + dy;
