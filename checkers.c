@@ -359,8 +359,12 @@ bool playerMustCapture() {
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
-            if (isWhiteTurn && (p == WHITE || p == WHITE_KING) && canCaptureFrom(x, y)) return true;
-            if (!isWhiteTurn && (p == BLACK || p == BLACK_KING) && canCaptureFrom(x, y)) return true;
+            bool is_current_player_piece =
+                (isWhiteTurn && (p == WHITE || p == WHITE_KING)) ||
+                (!isWhiteTurn && (p == BLACK || p == BLACK_KING));
+
+            if (is_current_player_piece && canCaptureFrom(x, y))
+                return true;
         }
     }
     return false;
