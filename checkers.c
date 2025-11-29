@@ -320,10 +320,17 @@ void drawPieces() {
 
     if (!vertices_precomputed) {
         float angle = 0.0f;
-        for (int i = 0; i <= 36; i++) {
-            circle_vertices_x[i] = cosf(angle);
-            circle_vertices_y[i] = sinf(angle);
-            angle += ANGLE_STEP;
+        for (int i = 0; i <= 36; i += 4) {
+            circle_vertices_x[i] = cosf(angle); circle_vertices_y[i] = sinf(angle); angle += ANGLE_STEP;
+            if (i + 1 <= 36) {
+                circle_vertices_x[i + 1] = cosf(angle); circle_vertices_y[i + 1] = sinf(angle); angle += ANGLE_STEP;
+            }
+            if (i + 2 <= 36) {
+                circle_vertices_x[i + 2] = cosf(angle); circle_vertices_y[i + 2] = sinf(angle); angle += ANGLE_STEP;
+            }
+            if (i + 3 <= 36) {
+                circle_vertices_x[i + 3] = cosf(angle); circle_vertices_y[i + 3] = sinf(angle); angle += ANGLE_STEP;
+            }
         }
         vertices_precomputed = true;
     }
