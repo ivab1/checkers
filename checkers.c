@@ -393,7 +393,8 @@ bool tryValidNormalOrCaptureMove(int x0, int y0, int x1, int y1, int* capX, int*
             return false;
         }
         if (abs_dx == 2 && abs_dy == 2) {
-            int midX = x0 + dx / 2, midY = y0 + dy / 2;
+            int midX = x0 + (dx >> 1);  
+            int midY = y0 + (dy >> 1);  
             if (isOpponent(p, board[midX][midY])) {
                 *captured = true;
                 *capX = midX;
