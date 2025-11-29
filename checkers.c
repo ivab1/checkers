@@ -370,14 +370,18 @@ void drawPieces() {
 
 bool playerMustCapture() {
     for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x++) {
-            Piece p = board[x][y];
-            bool is_current_player_piece =
-                (isWhiteTurn && (p == WHITE || p == WHITE_KING)) ||
-                (!isWhiteTurn && (p == BLACK || p == BLACK_KING));
+        for (int x = 0; x < BOARD_SIZE; x += 2) { 
+            Piece p1 = board[x][y];
+            bool is_current1 = (isWhiteTurn && (p1 == WHITE || p1 == WHITE_KING)) ||
+                (!isWhiteTurn && (p1 == BLACK || p1 == BLACK_KING));
+            if (is_current1 && canCaptureFrom(x, y)) return true;
 
-            if (is_current_player_piece && canCaptureFrom(x, y))
-                return true;
+            if (x + 1 < BOARD_SIZE) {
+                Piece p2 = board[x + 1][y];
+                bool is_current2 = (isWhiteTurn && (p2 == WHITE || p2 == WHITE_KING)) ||
+                    (!isWhiteTurn && (p2 == BLACK || p2 == BLACK_KING));
+                if (is_current2 && canCaptureFrom(x + 1, y)) return true;
+            }
         }
     }
     return false;
