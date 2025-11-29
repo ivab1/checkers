@@ -167,16 +167,22 @@ void tt_store(uint64_t hash, int depth, int score, int flag) {
 
 void initBoard() {
     for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x++) {
-            if ((x + y) % 2 == 1) {
-                if (y < 3) board[x][y] = BLACK;
-                else if (y > 4) board[x][y] = WHITE;
-                else board[x][y] = EMPTY;
-            }
-            else {
-                board[x][y] = EMPTY;
-            }
-        }
+        board[0][y] = ((0 + y) % 2 == 1) ?
+            (y < 3 ? BLACK : (y > 4 ? WHITE : EMPTY)) : EMPTY;
+        board[1][y] = ((1 + y) % 2 == 1) ?
+            (y < 3 ? BLACK : (y > 4 ? WHITE : EMPTY)) : EMPTY;
+        board[2][y] = ((2 + y) % 2 == 1) ?
+            (y < 3 ? BLACK : (y > 4 ? WHITE : EMPTY)) : EMPTY;
+        board[3][y] = ((3 + y) % 2 == 1) ?
+            (y < 3 ? BLACK : (y > 4 ? WHITE : EMPTY)) : EMPTY;
+        board[4][y] = ((4 + y) % 2 == 1) ?
+            (y < 3 ? BLACK : (y > 4 ? WHITE : EMPTY)) : EMPTY;
+        board[5][y] = ((5 + y) % 2 == 1) ?
+            (y < 3 ? BLACK : (y > 4 ? WHITE : EMPTY)) : EMPTY;
+        board[6][y] = ((6 + y) % 2 == 1) ?
+            (y < 3 ? BLACK : (y > 4 ? WHITE : EMPTY)) : EMPTY;
+        board[7][y] = ((7 + y) % 2 == 1) ?
+            (y < 3 ? BLACK : (y > 4 ? WHITE : EMPTY)) : EMPTY;
     }
 }
 
