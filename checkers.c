@@ -485,21 +485,18 @@ void getAllMoves(bool forWhite, Move* moves, int* moveCount);
 
 int evaluatePosition() {
     int score = 0;
+    const int PAWN_WEIGHT = 50;
+    const int KING_WEIGHT = 100;
 
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
-            if (p == WHITE) {
-                score += 50;
-            }
-            else if (p == WHITE_KING) {
-                score += 100;
-            }
-            else if (p == BLACK) {
-                score -= 50;
-            }
-            else if (p == BLACK_KING) {
-                score -= 100;
+            switch (p) {
+            case WHITE:      score += PAWN_WEIGHT; break;
+            case WHITE_KING: score += KING_WEIGHT; break;
+            case BLACK:      score -= PAWN_WEIGHT; break;
+            case BLACK_KING: score -= KING_WEIGHT; break;
+            default: break;
             }
         }
     }
