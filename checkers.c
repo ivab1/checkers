@@ -495,16 +495,15 @@ int evaluatePosition() {
     const int PAWN_WEIGHT = 50;
     const int KING_WEIGHT = 100;
 
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x++) {
-            Piece p = board[x][y];
-            switch (p) {
-            case WHITE:      score += PAWN_WEIGHT; break;
-            case WHITE_KING: score += KING_WEIGHT; break;
-            case BLACK:      score -= PAWN_WEIGHT; break;
-            case BLACK_KING: score -= KING_WEIGHT; break;
-            default: break;
-            }
+    Piece* board_ptr = &board[0][0];
+    for (int i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
+        Piece p = *board_ptr++;
+        switch (p) {
+        case WHITE:      score += PAWN_WEIGHT; break;
+        case WHITE_KING: score += KING_WEIGHT; break;
+        case BLACK:      score -= PAWN_WEIGHT; break;
+        case BLACK_KING: score -= KING_WEIGHT; break;
+        default: break;
         }
     }
 
