@@ -546,10 +546,11 @@ void getAllMoves(bool forWhite, Move* moves, int* moveCount) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
             if ((forWhite && (p == WHITE || p == WHITE_KING)) || (!forWhite && (p == BLACK || p == BLACK_KING))) {
+                bool is_king = isKing(p);
                 for (int d = 0; d < 4; d++) {
                     int dx = dirs[d][0], dy = dirs[d][1];
                     int nx = x + dx, ny = y + dy;
-                    if (isKing(p)) {
+                    if (is_king) {
                         while (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
                             if (board[nx][ny] == EMPTY) {
                                 if (!mustCapture) {
