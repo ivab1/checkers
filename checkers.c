@@ -311,6 +311,8 @@ void highlightCaptureMoves() {
 }
 
 void drawPieces() {
+    float radius = CELL_SIZE * 0.35f;
+    float inner = radius / 2;
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             Piece p = board[x][y];
@@ -320,7 +322,6 @@ void drawPieces() {
 
                 float cx = x * CELL_SIZE + CELL_SIZE / 2;
                 float cy = y * CELL_SIZE + CELL_SIZE / 2;
-                float radius = CELL_SIZE * 0.35f;
 
                 glBegin(GL_TRIANGLE_FAN);
                 glVertex2f(cx, cy);
@@ -332,7 +333,6 @@ void drawPieces() {
 
                 if (isKing(p)) {
                     glColor3f(1.0f, 0.0f, 0.0f);
-                    float inner = radius / 2;
 
                     glBegin(GL_TRIANGLE_FAN);
                     glVertex2f(cx, cy);

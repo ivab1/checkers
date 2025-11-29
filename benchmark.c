@@ -51,6 +51,7 @@ extern void botMove();
 extern void makeMove(int x0, int y0, int x1, int y1, bool captured, int capX, int capY);
 extern bool tryValidNormalOrCaptureMove(int x0, int y0, int x1, int y1, int* capX, int* capY, bool* captured);
 extern void updateGameOver();
+extern void drawPieces();
 
 // Глобальные переменные из checkers.c
 extern Piece board[BOARD_SIZE][BOARD_SIZE];
@@ -158,6 +159,10 @@ void bench_simple_move() {
     makeMove(2, 2, 3, 3, false, -1, -1);
 }
 
+void bench_drawPieces() {
+    drawPieces();
+}
+
 void runBenchmarks() {
     initBoard();
 
@@ -177,6 +182,7 @@ void runBenchmarks() {
     run_benchmark("tt_lookup", bench_tt_lookup);
     run_benchmark("minimax", bench_minimax_with_tt);
     run_benchmark("makeMove", bench_simple_move);
+    run_benchmark("drawPieces", bench_drawPieces);
 
     printf("\n=== BENCHMARKS COMPLETED ===\n");
 }
