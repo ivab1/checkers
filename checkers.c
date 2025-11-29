@@ -90,10 +90,17 @@ uint64_t random_64bit() {
 
 // Инициализация Zobrist таблицы
 void init_zobrist() {
-    for (int x = 0; x < BOARD_SIZE; x++) {
-        for (int y = 0; y < BOARD_SIZE; y++) {
-            for (int p = 0; p < 5; p++) { // 5 типов фигур: EMPTY, BLACK, WHITE, BLACK_KING, WHITE_KING
-                zobrist_table[x][y][p] = random_64bit(); // заполняем ячейку случайным числом
+    for (int x = 0; x < BOARD_SIZE; x += 2) { // Шаг 2 по x
+        for (int y = 0; y < BOARD_SIZE; y += 2) { // Шаг 2 по y
+            // Обрабатываем блок 2x2 за итерацию
+            for (int dx = 0; dx < 2 && x + dx < BOARD_SIZE; dx++) {
+                for (int dy = 0; dy < 2 && y + dy < BOARD_SIZE; dy++) {
+                    zobrist_table[x + dx][y + dy][EMPTY] = random_64bit();
+                    zobrist_table[x + dx][y + dy][BLACK] = random_64bit();
+                    zobrist_table[x + dx][y + dy][WHITE] = random_64bit();
+                    zobrist_table[x + dx][y + dy][BLACK_KING] = random_64bit();
+                    zobrist_table[x + dx][y + dy][WHITE_KING] = random_64bit();
+                }
             }
         }
     }

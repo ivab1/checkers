@@ -163,12 +163,17 @@ void bench_drawPieces() {
     drawPieces();
 }
 
+void bench_init_zobrist() {
+    init_zobrist();
+}
+
 void runBenchmarks() {
     initBoard();
 
     printf("=== HIGH-PRECISION BENCHMARKS ===\n\n");
 
     run_benchmark("initBoard", initBoard);
+    run_benchmark("init_zobrist", bench_init_zobrist);
     run_benchmark("evaluatePosition", bench_evaluate);
     run_benchmark("canCaptureFrom", bench_canCapture);
     run_benchmark("hasValidMoves (white)", bench_hasValidMovesWhite);
